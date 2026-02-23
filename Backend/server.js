@@ -16,6 +16,9 @@ app.get("/", (req, res) => {
 
 // ===== Import Routes =====
 app.use("/api/question", require("./routes/questionRoutes"));
+app.use("/api/progress", require("./routes/progressRoutes"));
+app.use("/api/courses", require("./routes/courseRoutes"));
+app.use("/api/videos", require("./routes/videoRoutes"));
 
 // ===== MongoDB Connection =====
 mongoose.connect(process.env.MONGO_URI)
@@ -28,6 +31,3 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
-
-const progressRoutes = require("./routes/progressRoutes");
-app.use("/api/progress", progressRoutes);
