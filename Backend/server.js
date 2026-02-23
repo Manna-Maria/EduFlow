@@ -14,10 +14,8 @@ app.get("/", (req, res) => {
   res.send("EduFlow Backend is Running 🚀");
 });
 
-// ===== Import Routes (Others will add here later) =====
-// Example:
-// const questionRoutes = require("./routes/questionRoutes");
-// app.use("/api/question", questionRoutes);
+// ===== Import Routes =====
+app.use("/api/question", require("./routes/questionRoutes"));
 
 // ===== MongoDB Connection =====
 mongoose.connect(process.env.MONGO_URI)
