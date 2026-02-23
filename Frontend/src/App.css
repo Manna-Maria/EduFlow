@@ -40,3 +40,20 @@
 .read-the-docs {
   color: #888;
 }
+
+
+.progress-container {
+  width: 100%;
+  background-color: #ddd;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.progress-bar {
+  height: 25px;
+  background-color: #4caf50;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  font-weight: bold;
+}
