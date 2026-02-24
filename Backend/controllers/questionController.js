@@ -85,12 +85,26 @@ exports.getQuestionsByVideo = async (req, res) => {
 exports.validateAnswers = async (req, res) => {
   try {
     const { answers } = req.body;
-    // answers = [{ questionId, selectedOption }]
+
+    if (!answers || answers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No answers submitted"
+      });
+    }
+
+    const questionIds = answers.map(ans => ans.questionId);
+
+    const questions = await Question.find({
+      _id: { $in: questionIds }
+    });
 
     let allCorrect = true;
 
     for (let ans of answers) {
-      const question = await Question.findById(ans.questionId);
+      const question = questions.find(
+        q => q._id.toString() === ans.questionId
+      );
 
       if (!question || question.correctAnswer !== ans.selectedOption) {
         allCorrect = false;
@@ -104,6 +118,9 @@ exports.validateAnswers = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
