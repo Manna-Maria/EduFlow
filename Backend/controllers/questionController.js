@@ -40,15 +40,71 @@ exports.getQuestionsByVideo = async (req, res) => {
 };
 
 // Validate answers
+const Question = require("../models/Question");
+
+// Add question (Admin use)
+exports.addQuestion = async (req, res) => {
+  try {
+    const { videoId, questionText, options, correctAnswer } = req.body;
+
+    const question = new Question({
+      videoId,
+      questionText,
+      options,
+      correctAnswer
+    });
+
+    await question.save();
+
+    res.status(201).json({
+      success: true,
+      message: "Question added successfully",
+      data: question
+    });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Get questions for a video
+exports.getQuestionsByVideo = async (req, res) => {
+  try {
+    const questions = await Question.find({
+      videoId: req.params.videoId
+    }).select("-correctAnswer"); // Hide correct answer
+
+    res.json({ success: true, data: questions });
+
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
+// Validate answers
 exports.validateAnswers = async (req, res) => {
   try {
     const { answers } = req.body;
-    // answers = [{ questionId, selectedOption }]
+
+    if (!answers || answers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No answers submitted"
+      });
+    }
+
+    const questionIds = answers.map(ans => ans.questionId);
+
+    const questions = await Question.find({
+      _id: { $in: questionIds }
+    });
 
     let allCorrect = true;
 
     for (let ans of answers) {
-      const question = await Question.findById(ans.questionId);
+      const question = questions.find(
+        q => q._id.toString() === ans.questionId
+      );
 
       if (!question || question.correctAnswer !== ans.selectedOption) {
         allCorrect = false;
@@ -62,6 +118,9 @@ exports.validateAnswers = async (req, res) => {
     });
 
   } catch (error) {
-    res.status(500).json({ success: false, message: error.message });
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
   }
 };
