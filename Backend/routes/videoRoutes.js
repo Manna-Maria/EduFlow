@@ -71,5 +71,4 @@ router.delete("/:id", deleteVideo);
 
 // Get all videos (least specific)
 router.get("/", getAllVideos);
-
 module.exports = router;
