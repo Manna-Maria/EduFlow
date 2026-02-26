@@ -15,7 +15,6 @@ const {
 
 // Upload a new video
 router.post("/", uploadVideo);
-
 // Get all videos
 router.get("/", getAllVideos);
 
@@ -36,4 +35,5 @@ router.put("/:id", updateVideo);
 
 // Delete video
 router.delete("/:id", deleteVideo);
+
 module.exports = router;

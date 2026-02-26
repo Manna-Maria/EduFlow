@@ -16,6 +16,9 @@ app.get("/", (req, res) => {
 
 // ===== Import Routes =====
 app.use("/api/question", require("./routes/questionRoutes"));
+app.use("/api/progress", require("./routes/progressRoutes"));
+app.use("/api/courses", require("./routes/courseRoutes"));
+app.use("/api/videos", require("./routes/videoRoutes"));
 
 // ===== MongoDB Connection =====
 mongoose.connect(process.env.MONGO_URI)
