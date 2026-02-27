@@ -18,6 +18,22 @@ API.interceptors.request.use((config) => {
   return config;
 });
 
+// ===== AUTH ENDPOINTS =====
+
+export const authAPI = {
+  // Register a new user
+  register: (userData) => API.post("/auth/register", userData),
+
+  // Login user
+  login: (credentials) => API.post("/auth/login", credentials),
+
+  // Get current user
+  getCurrentUser: () => API.get("/auth/me"),
+
+  // Logout
+  logout: () => API.post("/auth/logout"),
+};
+
 // ===== COURSE ENDPOINTS =====
 
 export const courseAPI = {

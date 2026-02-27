@@ -19,6 +19,7 @@ app.use("/api/question", require("./routes/questionRoutes"));
 app.use("/api/progress", require("./routes/progressRoutes"));
 app.use("/api/courses", require("./routes/courseRoutes"));
 app.use("/api/videos", require("./routes/videoRoutes"));
+app.use("/api/auth", require("./routes/authRoutes"));
 
 // ===== MongoDB Connection =====
 mongoose.connect(process.env.MONGO_URI)
