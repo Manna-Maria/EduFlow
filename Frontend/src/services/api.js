@@ -3,10 +3,7 @@ import axios from "axios";
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 const API = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json"
-  }
+  baseURL: API_BASE_URL
 });
 
 // Add token to requests if available
@@ -15,6 +12,12 @@ API.interceptors.request.use((config) => {
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
+  
+  // Don't set Content-Type for FormData - let axios/browser set it
+  if (!(config.data instanceof FormData)) {
+    config.headers["Content-Type"] = "application/json";
+  }
+  
   return config;
 });
 
@@ -64,11 +67,7 @@ export const courseAPI = {
 export const videoAPI = {
   // Upload a new video
   uploadVideo: (videoData, config = {}) => API.post("/videos", videoData, {
-    ...config,
-    headers: {
-      "Content-Type": "multipart/form-data",
-      ...config.headers
-    }
+    ...config
   }),
 
   // Get all videos

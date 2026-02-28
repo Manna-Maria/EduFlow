@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { videoAPI, courseAPI } from '../services/api';
 import './VideoUploadPage.css';
 
@@ -23,7 +23,7 @@ export default function VideoUploadPage() {
   const [uploadProgress, setUploadProgress] = useState(0);
 
   // Fetch courses on component mount
-  useState(() => {
+  useEffect(() => {
     fetchCourses();
   }, []);
 
@@ -71,14 +71,23 @@ export default function VideoUploadPage() {
 
     try {
       // Validate required fields
-      if (!formData.title || !formData.courseId || !formData.duration || !formData.uploadedBy) {
-        setMessage({ type: 'error', text: 'Please fill all required fields' });
+      if (!formData.title || !formData.courseId || !formData.uploadedBy) {
+        setMessage({ type: 'error', text: 'Please fill all required fields (title, course, uploaded by)' });
         setLoading(false);
         return;
       }
 
+      // Duration is optional for YouTube URLs, required for file uploads
       if (!videoFile && !formData.videoUrl) {
         setMessage({ type: 'error', text: 'Please select a video file or provide a video URL' });
+        setLoading(false);
+        return;
+      }
+
+      // If using YouTube URL, duration is optional (can be auto-detected)
+      const isYoutubeUrl = formData.videoUrl && (formData.videoUrl.includes('youtube.com') || formData.videoUrl.includes('youtu.be'));
+      if (videoFile && !formData.duration) {
+        setMessage({ type: 'error', text: 'Duration is required for file uploads' });
         setLoading(false);
         return;
       }
@@ -88,7 +97,7 @@ export default function VideoUploadPage() {
       uploadData.append('title', formData.title);
       uploadData.append('description', formData.description);
       uploadData.append('courseId', formData.courseId);
-      uploadData.append('duration', parseInt(formData.duration));
+      uploadData.append('duration', formData.duration || 0); // 0 for YouTube videos
       uploadData.append('order', parseInt(formData.order));
       uploadData.append('module', formData.module);
       uploadData.append('section', formData.section);
@@ -124,9 +133,10 @@ export default function VideoUploadPage() {
       setVideoFile(null);
       setUploadProgress(0);
 
-      // Redirect
+      // Redirect to the course page where video was uploaded
+      const courseIdToRedirect = formData.courseId;
       setTimeout(() => {
-        window.location.href = '/admin/videos';
+        window.location.href = `/admin/courses/${courseIdToRedirect}`;
       }, 1500);
     } catch (error) {
       setMessage({ 
