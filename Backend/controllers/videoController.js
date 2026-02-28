@@ -33,20 +33,22 @@ exports.uploadVideo = async (req, res) => {
       });
     }
 
-    const video = new Video({
+    // Create video object
+    const videoData = {
       title,
       description: description || "",
       courseId,
       videoUrl,
-      duration,
-      order: order || 0,
+      duration: parseInt(duration),
+      order: order ? parseInt(order) : 0,
       module: module || "",
       section: section || "",
-      uploadedBy,
+      uploadedBy: String(uploadedBy).trim(), // Ensure uploadedBy is a trimmed string
       fileSize: req.file ? req.file.size : null,
       mimeType: req.file ? req.file.mimetype : null
-    });
+    };
 
+    const video = new Video(videoData);
     await video.save();
 
     // Add video to course

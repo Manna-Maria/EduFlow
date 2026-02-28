@@ -15,11 +15,11 @@ const {
 // Create a new course
 router.post("/", createCourse);
 
-// Get all courses with filters
-router.get("/", getAllCourses);
-
-// Get course statistics
+// Get course statistics (more specific)
 router.get("/:id/stats", getCourseStats);
+
+// Add a module to a course (more specific)
+router.post("/:id/modules", addModule);
 
 // Get a specific course by ID
 router.get("/:id", getCourseById);
@@ -30,7 +30,7 @@ router.put("/:id", updateCourse);
 // Delete a course
 router.delete("/:id", deleteCourse);
 
-// Add a module to a course
-router.post("/:id/modules", addModule);
+// Get all courses with filters (least specific)
+router.get("/", getAllCourses);
 
 module.exports = router;
