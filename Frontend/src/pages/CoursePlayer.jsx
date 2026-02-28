@@ -61,16 +61,26 @@ const [questions, setQuestions] = useState([]);
   // When video ends
   const handleVideoEnd = async () => {
     try {
-
-      const res = await videoAPI.getVideoById(currentVideo._id);
-      // You can fetch questions related to this video if needed
-      // For now, move to next video
-      if (currentVideoIndex < videos.length - 1) {
-        setCurrentVideoIndex(currentVideoIndex + 1);
-      } else {
-        alert("You've completed all videos in this course!");
+      const res = await API.get(`/api/question/${currentVideo._id}`);
+  
+      const fetchedQuestions = res.data.data || [];
+  
+      if (fetchedQuestions.length === 0) {
+        alert("No questions for this video. Moving to next.");
+        
+        if (currentVideoIndex < videos.length - 1) {
+          setCurrentVideoIndex(currentVideoIndex + 1);
+        } else {
+          alert("Course Completed 🎉");
+        }
+        return;
       }
-   } catch (error) {
+  
+      // Show only 2 questions
+      setQuestions(fetchedQuestions.slice(0, 2));
+      setShowQuestions(true);
+  
+    } catch (error) {
       console.error("Error fetching questions:", error);
     }
   };
@@ -113,19 +123,50 @@ const [questions, setQuestions] = useState([]);
 
   // Submit answers
   const handleSubmit = async () => {
+
+    // 🚫 Prevent submitting without answering both
+    if (selectedAnswers.length < 2) {
+      alert("Please answer both questions.");
+      return;
+    }
+  
     try {
       const res = await API.post("/api/question/validate", {
+        videoId: currentVideo._id,
         answers: selectedAnswers,
       });
-
+  
       if (res.data.allCorrect) {
-        alert("Correct! You can move to next video.");
-        setShowQuestions(false); // hide questions
+        alert("Correct! Moving to next video.");
+  
+        // ✅ Clear UI
+        setShowQuestions(false);
+        setSelectedAnswers([]);
+  
+        // ✅ Move to next video
+        if (currentVideoIndex < videos.length - 1) {
+          setCurrentVideoIndex(currentVideoIndex + 1);
+        } else {
+          alert("Course Completed 🎉");
+        }
+  
       } else {
-        alert("Some answers are wrong. Try again.");
+        alert("Wrong answers! Going back to previous video.");
+  
+        // ❌ Clear UI
+        setShowQuestions(false);
+        setSelectedAnswers([]);
+  
+        // ❌ Move to previous video
+        if (currentVideoIndex > 0) {
+          setCurrentVideoIndex(currentVideoIndex - 1);
+        } else {
+          alert("This is the first video. Please watch again.");
+        }
       }
+  
     } catch (error) {
-      console.error("Validation error:", error);
+      console.error("Error validating answers:", error);
     }
   };
 
