@@ -1,8 +1,8 @@
-<<<<<<< HEAD
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { courseAPI, videoAPI } from "../services/api";
 import "./CoursePlayer.css";
+import API from "../services/api";
 
 const CoursePlayer = () => {
   const { courseId } = useParams();
@@ -12,16 +12,7 @@ const CoursePlayer = () => {
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-=======
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
-import API from "../services/api";
-
-const CoursePlayer = () => {
-  const { courseId } = useParams(); // get ID from URL
-
->>>>>>> 69faea9 (backend fixed and mongodb setup done)
-  const [questions, setQuestions] = useState([]);
+const [questions, setQuestions] = useState([]);
   const [showQuestions, setShowQuestions] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [actualDuration, setActualDuration] = useState(0);
@@ -70,7 +61,7 @@ const CoursePlayer = () => {
   // When video ends
   const handleVideoEnd = async () => {
     try {
-<<<<<<< HEAD
+
       const res = await videoAPI.getVideoById(currentVideo._id);
       // You can fetch questions related to this video if needed
       // For now, move to next video
@@ -79,12 +70,7 @@ const CoursePlayer = () => {
       } else {
         alert("You've completed all videos in this course!");
       }
-=======
-      const res = await API.get(`/api/question/${courseId}`);
-      setQuestions(res.data.data);
-      setShowQuestions(true);
->>>>>>> 69faea9 (backend fixed and mongodb setup done)
-    } catch (error) {
+   } catch (error) {
       console.error("Error fetching questions:", error);
     }
   };
@@ -128,12 +114,6 @@ const CoursePlayer = () => {
   // Submit answers
   const handleSubmit = async () => {
     try {
-<<<<<<< HEAD
-      // Validate answers (implement based on your validation endpoint)
-      alert("Answers submitted!");
-      setShowQuestions(false);
-      handleNextVideo();
-=======
       const res = await API.post("/api/question/validate", {
         answers: selectedAnswers,
       });
@@ -144,7 +124,6 @@ const CoursePlayer = () => {
       } else {
         alert("Some answers are wrong. Try again.");
       }
->>>>>>> 69faea9 (backend fixed and mongodb setup done)
     } catch (error) {
       console.error("Validation error:", error);
     }
@@ -163,7 +142,6 @@ const CoursePlayer = () => {
   }
 
   return (
-<<<<<<< HEAD
     <div className="course-player">
       <div className="player-header">
         <h1>{course.title}</h1>
@@ -212,45 +190,6 @@ const CoursePlayer = () => {
                 <div className="video-meta">
                   <span>⏱️ Duration: {actualDuration > 0 ? `${Math.floor(actualDuration / 60)}m ${actualDuration % 60}s` : 'Loading...'}</span>
                   <span>👤 Uploaded by: {currentVideo.uploadedBy}</span>
-=======
-    <div style={{ padding: "20px" }}>
-      <h2>Course Player</h2>
-
-      <video
-        width="600"
-        controls
-        onEnded={handleVideoEnd}
-      >
-        {/* Replace this with your actual video URL */}
-        <source
-          src="http://localhost:5000/uploads/sample.mp4"
-          type="video/mp4"
-        />
-      </video>
-
-      {showQuestions && (
-        <div style={{ marginTop: "30px" }}>
-          <h3>Answer these questions:</h3>
-
-          {questions.map((q) => (
-            <div
-              key={q._id}
-              style={{ marginBottom: "20px" }}
-            >
-              <p>{q.questionText}</p>
-
-              {q.options.map((option, index) => (
-                <div key={index}>
-                  <input
-                    type="radio"
-                    name={q._id}
-                    value={option}
-                    onChange={() =>
-                      handleOptionChange(q._id, option)
-                    }
-                  />
-                  {option}
->>>>>>> 69faea9 (backend fixed and mongodb setup done)
                 </div>
 
                 {currentVideo.module && (
