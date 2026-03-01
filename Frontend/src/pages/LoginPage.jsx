@@ -5,6 +5,15 @@ import "./LoginPage.css";
 
 function LoginPage() {
   const navigate = useNavigate();
+
+  React.useEffect(() => {
+    const token = localStorage.getItem("token");
+
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    }
+  }, []);
+
   const [isLogin, setIsLogin] = useState(true);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -24,6 +33,14 @@ function LoginPage() {
     confirmPassword: "",
     role: "student",
   });
+
+  // Logout function 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    delete axios.defaults.headers.common["Authorization"];
+    navigate("/");
+  };
 
   // Handle login form change
   const handleLoginChange = (e) => {
@@ -58,11 +75,12 @@ function LoginPage() {
       );
 
       if (response.data.success) {
-        // Store token in localStorage
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        // Redirect to dashboard
+        axios.defaults.headers.common["Authorization"] =
+          `Bearer ${response.data.token}`;
+
         navigate("/dashboard");
       }
     } catch (err) {
@@ -80,7 +98,6 @@ function LoginPage() {
     setLoading(true);
     setError("");
 
-    // Validation
     if (registerForm.password !== registerForm.confirmPassword) {
       setError("Passwords do not match");
       setLoading(false);
@@ -105,11 +122,12 @@ function LoginPage() {
       );
 
       if (response.data.success) {
-        // Store token in localStorage
         localStorage.setItem("token", response.data.token);
         localStorage.setItem("user", JSON.stringify(response.data.user));
 
-        // Redirect to dashboard
+        axios.defaults.headers.common["Authorization"] =
+          `Bearer ${response.data.token}`;
+
         navigate("/dashboard");
       }
     } catch (err) {
@@ -136,237 +154,125 @@ function LoginPage() {
         {/* Right Side - Form */}
         <div className="auth-right">
           <div className="auth-form-container">
+
+            {/* TEMPORARY LOGOUT BUTTON (ADDED FOR TESTING) */}
+            <button onClick={handleLogout} style={{ marginBottom: "10px" }}>
+              Logout (Test)
+            </button>
+
             {/* Error Message */}
             {error && <div className="error-message">{error}</div>}
 
             {/* Login Form */}
-            {isLogin ? (
-              <form onSubmit={handleLoginSubmit} className="auth-form">
-                <h2>Welcome Back! 👋</h2>
-                <p className="form-subtitle">
-                  Sign in to continue your learning journey
-                </p>
-
-                <div className="form-group">
-                  <label htmlFor="login-email">Email Address</label>
+            {isLogin ? ( 
+              <form onSubmit={handleLoginSubmit} className="auth-form"> 
+               <h2>Welcome Back! 👋</h2>
+               <p className="form-subtitle">
+                 Sign in to continue your learning journey
+               </p>
+               <div className="form-group">
+                 <label htmlFor="login-email">Email Address</label>
                   <input
-                    id="login-email"
-                    type="email"
-                    name="email"
-                    value={loginForm.email}
-                    onChange={handleLoginChange}
-                    placeholder="you@example.com"
-                    required
+                   id="login-email"
+                   type="email"
+                   name="email" 
+                   value={loginForm.email} 
+                   onChange={handleLoginChange}
+                   placeholder="you@example.com"
+                   required 
                   />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="login-password">Password</label>
-                  <div className="password-input-wrapper">
-                    <input
+                 </div> 
+                 <div className="form-group">
+                   <label htmlFor="login-password">Password</label>
+                   <div className="password-input-wrapper">
+                     <input
                       id="login-password"
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={loginForm.password}
-                      onChange={handleLoginChange}
-                      placeholder="Enter your password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="form-options">
+                      type={showPassword ? "text" : "password"} 
+                      name="password" 
+                      value={loginForm.password} 
+                      onChange={handleLoginChange} 
+                      placeholder="Enter your password" 
+                      required 
+                     /> 
+                     <button
+                      type="button" 
+                      className="password-toggle" 
+                      onClick={() => setShowPassword(!showPassword)} 
+                    > 
+                    {showPassword ? "👁️" : "👁️‍🗨️"} 
+                  </button> 
+                 </div> 
+                 </div> 
+                 <div className="form-options"> 
                   <label className="remember-me">
-                    <input type="checkbox" />
-                    Remember me
-                  </label>
-                  <a href="#forgot" className="forgot-password">
-                    Forgot Password?
-                  </a>
-                </div>
-
-                <button
-                  type="submit"
-                  className="auth-button"
-                  disabled={loading}
-                >
-                  {loading ? "Signing in..." : "Sign In"}
-                </button>
-
-                <div className="auth-divider">
-                  <span>or</span>
-                </div>
-
-                <button
-                  type="button"
-                  className="social-button google"
-                  disabled={loading}
-                >
-                  <span>🔍</span> Continue with Google
-                </button>
-              </form>
-            ) : (
-              /* Register Form */
-              <form onSubmit={handleRegisterSubmit} className="auth-form">
-                <h2>Create Account 🚀</h2>
-                <p className="form-subtitle">
-                  Join EduFlow and start learning today
-                </p>
-
-                <div className="form-group">
-                  <label htmlFor="register-name">Full Name</label>
-                  <input
-                    id="register-name"
-                    type="text"
-                    name="fullName"
-                    value={registerForm.fullName}
-                    onChange={handleRegisterChange}
-                    placeholder="John Doe"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="register-email">Email Address</label>
-                  <input
-                    id="register-email"
-                    type="email"
-                    name="email"
-                    value={registerForm.email}
-                    onChange={handleRegisterChange}
-                    placeholder="you@example.com"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="register-role">I am a</label>
-                  <select
-                    id="register-role"
-                    name="role"
-                    value={registerForm.role}
-                    onChange={handleRegisterChange}
-                  >
-                    <option value="student">Student</option>
-                    <option value="instructor">Instructor</option>
-                  </select>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="register-password">Password</label>
-                  <div className="password-input-wrapper">
-                    <input
-                      id="register-password"
-                      type={showPassword ? "text" : "password"}
-                      name="password"
-                      value={registerForm.password}
-                      onChange={handleRegisterChange}
-                      placeholder="At least 6 characters"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="register-confirm">Confirm Password</label>
-                  <div className="password-input-wrapper">
-                    <input
-                      id="register-confirm"
-                      type={showPassword ? "text" : "password"}
-                      name="confirmPassword"
-                      value={registerForm.confirmPassword}
-                      onChange={handleRegisterChange}
-                      placeholder="Confirm your password"
-                      required
-                    />
-                    <button
-                      type="button"
-                      className="password-toggle"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? "👁️" : "👁️‍🗨️"}
-                    </button>
-                  </div>
-                </div>
-
-                <label className="terms-check">
-                  <input type="checkbox" required />
-                  I agree to the Terms & Conditions
-                </label>
-
-                <button
-                  type="submit"
-                  className="auth-button"
-                  disabled={loading}
-                >
-                  {loading ? "Creating Account..." : "Create Account"}
-                </button>
-
-                <div className="auth-divider">
-                  <span>or</span>
-                </div>
-
-                <button
-                  type="button"
-                  className="social-button google"
-                  disabled={loading}
-                >
-                  <span>🔍</span> Sign up with Google
-                </button>
-              </form>
-            )}
-
-            {/* Footer */}
-            <div className="auth-footer">
-              {isLogin ? (
-                <p>
-                  Don't have an account?{" "}
+                     <input type="checkbox" />
+                      Remember me 
+                  </label> 
+                  <a href="#forgot" className="forgot-password"> 
+                    Forgot Password? 
+                  </a> 
+                  </div> 
                   <button
-                    type="button"
-                    className="switch-auth"
-                    onClick={() => {
-                      setIsLogin(false);
-                      setError("");
-                    }}
-                  >
-                    Sign up
-                  </button>
-                </p>
-              ) : (
-                <p>
-                  Already have an account?{" "}
-                  <button
-                    type="button"
-                    className="switch-auth"
-                    onClick={() => {
-                      setIsLogin(true);
-                      setError("");
-                    }}
-                  >
-                    Sign in
-                  </button>
-                </p>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-export default LoginPage;
+                   type="submit"
+                    className="auth-button" 
+                    disabled={loading} 
+                    > 
+                    {loading ? "Signing in..." : "Sign In"} 
+                    </button>
+                     <div className="auth-divider"> 
+                      <span>or</span>
+                       </div> 
+                       <button
+                        type="button"
+                         className="social-button google" 
+                         disabled={loading} > 
+                         <span>🔍</span> Continue with Google
+                          </button> </form>
+                           ) : (
+           /* Register Form */ 
+           <form onSubmit={handleRegisterSubmit} 
+           className="auth-form">
+             <h2>Create Account 🚀</h2> 
+             <p className="form-subtitle"> 
+              Join EduFlow and start learning today </p> 
+              <div className="form-group"> 
+                <label htmlFor="register-name">Full Name</label>
+                 <input id="register-name" 
+                 type="text" 
+                 name="fullName" 
+                 value={registerForm.fullName} 
+                 onChange={handleRegisterChange} 
+                 placeholder="John Doe" 
+                 required /> 
+                 </div>
+                  <div
+                   className="form-group"> 
+                   <label htmlFor="register-email">
+                    Email Address</label> 
+                 <input 
+                 id="register-email" 
+                 type="email" 
+                 name="email"
+                  value={registerForm.email} 
+                  onChange={handleRegisterChange} 
+                  placeholder="you@example.com" required />
+                   </div> 
+                   <div className="form-group">
+                     <label htmlFor="register-role">I am a</label>
+                      <select id="register-role"
+                       name="role" 
+                       value={registerForm.role} onChange={handleRegisterChange} > <option value="student">Student</option> <option value="instructor">Instructor</option> </select> </div> <div className="form-group"> <label htmlFor="register-password">Password</label>
+                        <div className="password-input-wrapper"> <input id="register-password" type={showPassword ? "text" : "password"} name="password" value={registerForm.password} onChange={handleRegisterChange} 
+                        placeholder="At least 6 characters" 
+                        required /> 
+                        <button
+                         type="button"
+                          className="password-toggle" 
+                          onClick={() => setShowPassword(!showPassword)} >
+                             {showPassword ? "👁️" : "👁️‍🗨️"}
+                              </button> 
+                              </div>
+                               </div> 
+                               <div className="form-group"> 
+                                <label htmlFor="register-confirm">Confirm Password</label> <div className="password-input-wrapper"> <input id="register-confirm" type={showPassword ? "text" : "password"} name="confirmPassword" value={registerForm.confirmPassword} onChange={handleRegisterChange} placeholder="Confirm your password" required /> <button type="button" className="password-toggle" onClick={() => setShowPassword(!showPassword)} > {showPassword ? "👁️" : "👁️‍🗨️"} </button> </div> </div> <label className="terms-check"> <input type="checkbox" required /> I agree to the Terms & Conditions </label> <button type="submit" className="auth-button" disabled={loading} > {loading ? "Creating Account..." : "Create Account"} </button> <div className="auth-divider"> <span>or</span> </div> <button type="button" className="social-button google" disabled={loading} > <span>🔍</span> Sign up with Google </button> </form> )} {/* Footer */} <div className="auth-footer"> {isLogin ? ( <p> Don't have an account?{" "} <button type="button" className="switch-auth" onClick={() => { setIsLogin(false); setError(""); }} > Sign up </button> </p> ) : ( <p> Already have an account?{" "} <button type="button" className="switch-auth" onClick={() => { setIsLogin(true); setError(""); }} > Sign in </button> </p> )} </div> </div> </div> </div> </div> ); } 
+                 export default LoginPage;
