@@ -1,4 +1,4 @@
-import { Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from './pages/LoginPage';
 import AdminDashboard from './pages/AdminDashboard';
 import CourseCreationForm from './pages/CourseCreationForm';
@@ -6,6 +6,7 @@ import CourseListingPage from './pages/CourseListingPage';
 import VideoUploadPage from './pages/VideoUploadPage';
 import CoursePlayer from './pages/CoursePlayer';
 import Dashboard from './pages/Dashboard';
+import ProtectedRoute from "./components/ProtectedRoute";
 import './App.css';
 
 function App() {
@@ -32,4 +33,4 @@ function App() {
   );
 }
 
-export default App;
+export default App;  
