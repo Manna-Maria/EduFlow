@@ -1,0 +1,28 @@
+start	end	text
+0	4800	Let's talk about Python. What is it? How does it work and how you can get started today?
+4800	8000	All of that and more in two minutes. Start the timer.
+12080	16400	Python is a prevalent general purpose programming language often used from machine learning
+16400	23280	in data analysis. Python was created by Guido Van Rossum and was first released on February 20, 1991.
+23280	28400	This language is so influential that in 1999 the Zenfiton was released, which is a guiding
+28400	33520	set of principles for using Python in the upmost Mr. Miyagi way. There are numerous reasons
+33520	38720	why this language is hotter than the backstreet boys were in 1997. The first being that Python is
+38720	43520	very readable, like it's state-to-ness Zenfiton. Simple is better than complex, and that's
+43520	47840	exactly what the language mirrors. Python can also handle a multitude of different jobs,
+47840	52240	for machine learning, to data, analytics, web development, testing, and so on.
+52240	56560	There is no need to debate how great this language is, but how can we use it? You can download
+56640	62320	Python on the official getting started with Python page. Once downloaded, creating a file with Python
+62320	68080	is as easy as naming the file and ending it with .py. These files are also referred to as modules.
+68080	72160	Then all you need to do is print hello world, and there you go. You can practice all your
+72160	77360	friends that you are the next Bill Gates. You have probably heard of interpreted versus compiled,
+77360	82480	right? Well, Python is an interpreted language, which means the source code is converted into
+83360	87760	that is then executed by the Python virtual machine. This equates to Python being extremely
+87760	92240	fast to develop, but not so fast during the execution step, since the code is not directly
+92240	97760	compiled and executed. But why should we learn Python? Probably the most important answer to that
+97760	101600	is just how beginner friendly the language is. If you're brain new to web development,
+101600	106000	my recommendation is either learned Python or JavaScript. You can't go wrong with either.
+106000	110800	As we mentioned before, Python is also extremely versatile. You can do so many different tasks
+110880	116400	with just one language. Lastly, Python developers are extremely in demand. There are 36,000
+116400	121120	job postings on zippercouter at this current moment for entry-level Python developers.
+121120	124960	If you want to learn Python and fully master one of the most relevant languages in the world
+124960	129680	of development, check out zero to masteries complete Python developer bootcamp course.
+129680	131680	Will you go from beginner to expert?

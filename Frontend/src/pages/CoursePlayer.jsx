@@ -3,6 +3,7 @@ import { useParams } from "react-router-dom";
 import { courseAPI, videoAPI } from "../services/api";
 import "./CoursePlayer.css";
 import API from "../services/api";
+import YouTube from "react-youtube";
 
 const CoursePlayer = () => {
   const { courseId } = useParams();
@@ -60,10 +61,16 @@ const [questions, setQuestions] = useState([]);
 
   // When video ends
   const handleVideoEnd = async () => {
+    
+      console.log("VIDEO ENDED 🔥");
+      alert("Video ended");
+      
+console.log("Setting showQuestions TRUE");
     try {
-      const res = await API.get(`/api/question/${currentVideo._id}`);
+      const res = await API.get(`/question/${currentVideo._id}`);
   
       const fetchedQuestions = res.data.data || [];
+      console.log("Fetched questions:", fetchedQuestions);
   
       if (fetchedQuestions.length === 0) {
         alert("No questions for this video. Moving to next.");
@@ -79,6 +86,7 @@ const [questions, setQuestions] = useState([]);
       // Show only 2 questions
       setQuestions(fetchedQuestions.slice(0, 2));
       setShowQuestions(true);
+      console.log("showQuestions after set:", showQuestions);
   
     } catch (error) {
       console.error("Error fetching questions:", error);
@@ -86,6 +94,11 @@ const [questions, setQuestions] = useState([]);
   };
 
   const handleNextVideo = () => {
+    if (showQuestions) {
+      alert("Complete quiz before moving ahead!");
+      return;
+    }
+
     if (currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(currentVideoIndex + 1);
       setShowQuestions(false);
@@ -100,6 +113,10 @@ const [questions, setQuestions] = useState([]);
   };
 
   const selectVideo = (index) => {
+    if (showQuestions) {
+      alert("Complete quiz before moving ahead!");
+      return;
+    }
     setCurrentVideoIndex(index);
     setShowQuestions(false);
     setActualDuration(0);
@@ -131,7 +148,7 @@ const [questions, setQuestions] = useState([]);
     }
   
     try {
-      const res = await API.post("/api/question/validate", {
+      const res = await API.post("/question/validate", {
         videoId: currentVideo._id,
         answers: selectedAnswers,
       });
@@ -157,12 +174,7 @@ const [questions, setQuestions] = useState([]);
         setShowQuestions(false);
         setSelectedAnswers([]);
   
-        // ❌ Move to previous video
-        if (currentVideoIndex > 0) {
-          setCurrentVideoIndex(currentVideoIndex - 1);
-        } else {
-          alert("This is the first video. Please watch again.");
-        }
+        
       }
   
     } catch (error) {
@@ -196,16 +208,17 @@ const [questions, setQuestions] = useState([]);
               <div className="video-wrapper">
                 {isYoutubeUrl(currentVideo.videoUrl) ? (
                   // YouTube Video
-                  <iframe
-                    key={currentVideo._id}
-                    width="100%"
-                    height="600"
-                    src={`https://www.youtube.com/embed/${getYoutubeVideoId(currentVideo.videoUrl)}?rel=0&modestbranding=1`}
-                    title={currentVideo.title}
-                    frameBorder="0"
-                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                    allowFullScreen
-                  ></iframe>
+                  <YouTube
+  videoId={getYoutubeVideoId(currentVideo.videoUrl)}
+  opts={{
+    width: "100%",
+    height: "600",
+    playerVars: {
+      autoplay: 1,
+    },
+  }}
+  onEnd={handleVideoEnd}
+/>
                 ) : (
                   // Local/External Video File
                   <video
@@ -267,17 +280,15 @@ const [questions, setQuestions] = useState([]);
                     <div key={q._id} className="question-item">
                       <p>{q.questionText}</p>
                       {q.options.map((option, index) => (
-                        <div key={index} className="option">
-                          <input
-                            type="radio"
-                            name={q._id}
-                            value={option}
-                            onChange={() =>
-                              handleOptionChange(q._id, option)
-                            }
-                          />
-                          <label>{option}</label>
-                        </div>
+                        <label key={index} className="option">
+                        <input
+                          type="radio"
+                          name={q._id}
+                          value={option}
+                          onChange={() => handleOptionChange(q._id, option)}
+                        />
+                        <span>{option}</span>
+                      </label>
                       ))}
                     </div>
                   ))}
