@@ -11,13 +11,13 @@ function Dashboard() {
   });
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [studentName, setStudentName] = useState("Azeen");
-  
-  // TODO: Replace with actual logged-in user ID from authentication system
-  const studentId = "YOUR_LOGGED_IN_USER_ID";
-
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const studentId = storedUser?.id;
+  const studentName = storedUser?.fullName || "Student";
   useEffect(() => {
-    const fetchDashboardData = async () => {
+  if (!studentId) return;
+
+  const fetchDashboardData = async () => {
       try {
         // Fetch summary statistics
         const summaryRes = await axios.get(
@@ -95,6 +95,15 @@ function Dashboard() {
 
   return (
     <div className="dashboard-container">
+      <button
+        onClick={() => {
+          localStorage.removeItem("token");
+          localStorage.removeItem("user");
+          window.location.href = "/login";
+        }}
+      >
+        Logout
+      </button>
       {/* 1️⃣ WELCOME SECTION */}
       <div className="welcome-section">
         <h1>Welcome, {studentName} 👋</h1>

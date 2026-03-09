@@ -11,7 +11,7 @@ const generateToken = (id) => {
 // ===== REGISTER USER =====
 exports.register = async (req, res) => {
   try {
-    const { fullName, email, password, role } = req.body;
+    const { fullName, email, password} = req.body;
 
     // Validation
     if (!fullName || !email || !password) {
@@ -35,7 +35,6 @@ exports.register = async (req, res) => {
       fullName,
       email,
       password,
-      role: role || "student",
     });
 
     // Generate token
@@ -50,7 +49,7 @@ exports.register = async (req, res) => {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
-        role: user.role,
+      
       },
     });
   } catch (error) {
@@ -114,7 +113,7 @@ exports.login = async (req, res) => {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
-        role: user.role,
+      
         profilePicture: user.profilePicture,
       },
     });
@@ -157,7 +156,7 @@ exports.getCurrentUser = async (req, res) => {
         id: user._id,
         fullName: user.fullName,
         email: user.email,
-        role: user.role,
+        
         profilePicture: user.profilePicture,
         bio: user.bio,
       },
