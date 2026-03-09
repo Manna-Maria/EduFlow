@@ -1,6 +1,16 @@
 const Video = require("../models/Video");
 const Course = require("../models/Course");
+const Question = require("../models/Question");
+const downloadAudioFromYouTube = require("../utils/youtubeAudio");
+const { exec } = require("child_process");
+const generateMCQs = require("../utils/generateMCQ");
 
+const fs = require("fs");
+const OpenAI = require("openai");
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
 // ===== UPLOAD VIDEO =====
 exports.uploadVideo = async (req, res) => {
   try {
@@ -32,7 +42,58 @@ exports.uploadVideo = async (req, res) => {
         message: "Video URL or file is required"
       });
     }
+// 🔥 NEW PART — Download audio if YouTube link
+let audioPath = null;
 
+if (videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be")) {
+  try {
+    audioPath = await downloadAudioFromYouTube(videoUrl);
+    console.log("Audio downloaded at:", audioPath);
+  } catch (err) {
+    console.log("Audio download failed:", err.message);
+  }
+}
+// 🔥 STEP 3 — Transcribe Audio
+// 🔥 STEP 3 — Transcribe Audio Locally
+let transcript = "";
+
+if (audioPath) {
+  try {
+    await new Promise((resolve, reject) => {
+      exec(
+        `python3 -m whisper "${audioPath}" --model tiny --output_format txt --output_dir uploads/transcripts`,
+        (error, stdout, stderr) => {
+          if (error) {
+            reject(error);
+          } else {
+            resolve(stdout);
+          }
+        }
+      );
+    });
+
+    const transcriptFile = audioPath
+      .replace("audio", "transcripts")
+      .replace(".mp3", ".txt");
+
+    transcript = fs.readFileSync(transcriptFile, "utf-8");
+
+    console.log("Transcript generated locally ✅");
+
+  } catch (err) {
+    console.log("Local transcription failed:", err.message);
+  }
+}
+let quizQuestions = [];
+
+if (transcript) {
+  try {
+    quizQuestions = await generateMCQs(transcript);
+    console.log("MCQs generated successfully ✅");
+  } catch (err) {
+    console.log("MCQ generation failed:", err.message);
+  }
+}
     // Create video object
     const videoData = {
       title,
@@ -45,7 +106,8 @@ exports.uploadVideo = async (req, res) => {
       section: section || "",
       uploadedBy: String(uploadedBy).trim(), // Ensure uploadedBy is a trimmed string
       fileSize: req.file ? req.file.size : null,
-      mimeType: req.file ? req.file.mimetype : null
+      mimeType: req.file ? req.file.mimetype : null,
+      transcript,
     };
 
     const video = new Video(videoData);
@@ -54,6 +116,22 @@ exports.uploadVideo = async (req, res) => {
     // Add video to course
     course.videos.push(video._id);
     await course.save();
+    // 🔥 SAVE MCQs INTO QUESTION COLLECTION
+if (quizQuestions.length > 0) {
+  for (let mcq of quizQuestions) {
+    await Question.create({
+      videoId: video._id,
+      questionText: mcq.question,
+      options: [
+        mcq.options.A,
+        mcq.options.B,
+        mcq.options.C,
+        mcq.options.D
+      ],
+      correctAnswer: mcq.correctAnswer
+    });
+  }
+}
 
     res.status(201).json({
       success: true,
@@ -107,7 +185,7 @@ exports.getVideoById = async (req, res) => {
     )
       .populate("courseId", "title category duration")
       .populate("uploadedBy", "name email")
-      .populate("quiz");
+      
 
     if (!video) {
       return res.status(404).json({

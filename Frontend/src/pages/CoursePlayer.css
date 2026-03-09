@@ -148,9 +148,12 @@
 .questions-section {
   margin-top: 2rem;
   padding: 2rem;
-  background: #f8f9fa;
-  border-radius: 8px;
-  border-left: 4px solid #667eea;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .questions-section h3 {
@@ -161,10 +164,10 @@
 
 .question-item {
   margin-bottom: 2rem;
-  padding: 1rem;
-  background: white;
-  border-radius: 8px;
-  border: 1px solid #ecf0f1;
+  padding: 1.5rem;
+  background: #f9fafb;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
 }
 
 .question-item p {
@@ -176,19 +179,24 @@
 .option {
   display: flex;
   align-items: center;
-  margin-bottom: 0.8rem;
-  padding: 0.5rem;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
   cursor: pointer;
+  width: fit-content;
 }
 
 .option input[type="radio"] {
-  cursor: pointer;
-  margin-right: 0.8rem;
+  margin: 0;
 }
 
-.option label {
-  cursor: pointer;
-  color: #555;
+.option span {
+  font-weight: 500;
+  color: #2c3e50;
+}
+
+.option:hover {
+  background-color: #eef2ff;
 }
 
 .btn-submit {

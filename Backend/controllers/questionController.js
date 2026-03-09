@@ -63,8 +63,19 @@ exports.validateAnswers = async (req, res) => {
       const question = questions.find(
         q => q._id.toString() === ans.questionId
       );
-
-      if (!question || question.correctAnswer !== ans.selectedOption) {
+    
+      if (!question) {
+        allCorrect = false;
+        break;
+      }
+    
+      // Convert "A" → 0, "B" → 1, etc.
+      const correctIndex = question.correctAnswer.charCodeAt(0) - 65;
+    
+      // Get actual correct option text
+      const correctOptionText = question.options[correctIndex];
+    
+      if (correctOptionText !== ans.selectedOption) {
         allCorrect = false;
         break;
       }
