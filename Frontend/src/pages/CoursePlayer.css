@@ -267,6 +267,16 @@
   font-weight: 600;
 }
 
+.playlist-item.locked {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.playlist-item.locked:hover {
+  transform: none;
+  background: #f8f9fa;
+}
+
 .playlist-item-number {
   min-width: 30px;
   height: 30px;

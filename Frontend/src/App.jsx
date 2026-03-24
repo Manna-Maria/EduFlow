@@ -49,36 +49,36 @@ function App() {
         <Route
           path="/admin"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <AdminDashboard />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
         <Route
           path="/admin/dashboard"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <AdminDashboard />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
         <Route
           path="/admin/courses"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <CourseListingPage />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
         <Route
           path="/admin/courses/create"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <CourseCreationForm />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
@@ -94,27 +94,27 @@ function App() {
         <Route
           path="/admin/courses/:courseId"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <CoursePlayer />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
         <Route
           path="/admin/videos/upload"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <VideoUploadPage />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
         <Route
           path="/admin/videos/:id"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <VideoUploadPage />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
