@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect,useRef} from "react";
 import { useParams } from "react-router-dom";
 import { courseAPI, videoAPI } from "../services/api";
 import "./CoursePlayer.css";
@@ -7,6 +7,9 @@ import YouTube from "react-youtube";
 
 const CoursePlayer = () => {
   const { courseId } = useParams();
+
+const intervalRef = useRef(null);
+const lastPlayedTimeRef = useRef(0);
 
   const [course, setCourse] = useState(null);
   const [videos, setVideos] = useState([]);
@@ -17,11 +20,33 @@ const [questions, setQuestions] = useState([]);
   const [showQuestions, setShowQuestions] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [actualDuration, setActualDuration] = useState(0);
+  const [completedVideos, setCompletedVideos] = useState([]);
+const [player, setPlayer] = useState(null);
+const [watchedSeconds, setWatchedSeconds] = useState(0);
+const [lastPlayedTime, setLastPlayedTime] = useState(0);
+const [videoEnded, setVideoEnded] = useState(false);
 
   // Fetch course and videos on component mount
   useEffect(() => {
     fetchCourseAndVideos();
   }, [courseId]);
+  useEffect(() => {
+    setShowQuestions(false);
+    setSelectedAnswers([]);
+    setQuestions([]);
+    setWatchedSeconds(0);
+    setLastPlayedTime(0);
+    lastPlayedTimeRef.current = 0;
+    setVideoEnded(false);
+  }, [currentVideoIndex]);
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   const fetchCourseAndVideos = async () => {
     try {
@@ -61,21 +86,23 @@ const [questions, setQuestions] = useState([]);
 
   // When video ends
   const handleVideoEnd = async () => {
-    
-      console.log("VIDEO ENDED 🔥");
-      alert("Video ended");
-      
-console.log("Setting showQuestions TRUE");
+    console.log("VIDEO ENDED 🔥");
+    setVideoEnded(true);
+  
     try {
       const res = await API.get(`/question/${currentVideo._id}`);
-  
       const fetchedQuestions = res.data.data || [];
+  
       console.log("Fetched questions:", fetchedQuestions);
   
       if (fetchedQuestions.length === 0) {
-        alert("No questions for this video. Moving to next.");
-        
+        // No quiz → mark video complete directly
+        setCompletedVideos((prev) =>
+          prev.includes(currentVideoIndex) ? prev : [...prev, currentVideoIndex]
+        );
+  
         if (currentVideoIndex < videos.length - 1) {
+          alert("Video completed. Moving to next video.");
           setCurrentVideoIndex(currentVideoIndex + 1);
         } else {
           alert("Course Completed 🎉");
@@ -83,25 +110,21 @@ console.log("Setting showQuestions TRUE");
         return;
       }
   
-      // Show only 2 questions
       setQuestions(fetchedQuestions.slice(0, 2));
       setShowQuestions(true);
-      console.log("showQuestions after set:", showQuestions);
-  
     } catch (error) {
       console.error("Error fetching questions:", error);
     }
   };
 
   const handleNextVideo = () => {
-    if (showQuestions) {
-      alert("Complete quiz before moving ahead!");
+    if (!completedVideos.includes(currentVideoIndex)) {
+      alert("Complete the current video and quiz first!");
       return;
     }
-
+  
     if (currentVideoIndex < videos.length - 1) {
       setCurrentVideoIndex(currentVideoIndex + 1);
-      setShowQuestions(false);
     }
   };
 
@@ -113,13 +136,22 @@ console.log("Setting showQuestions TRUE");
   };
 
   const selectVideo = (index) => {
+    if (index === currentVideoIndex) return;
+  
     if (showQuestions) {
       alert("Complete quiz before moving ahead!");
       return;
     }
+  
+    const isCompleted = completedVideos.includes(index);
+    const isNextUnlocked = index === currentVideoIndex + 1 && completedVideos.includes(currentVideoIndex);
+  
+    if (!isCompleted && !isNextUnlocked) {
+      alert("You must watch videos in order.");
+      return;
+    }
+  
     setCurrentVideoIndex(index);
-    setShowQuestions(false);
-    setActualDuration(0);
   };
 
   const handleVideoMetadataLoaded = (e) => {
@@ -140,8 +172,6 @@ console.log("Setting showQuestions TRUE");
 
   // Submit answers
   const handleSubmit = async () => {
-
-    // 🚫 Prevent submitting without answering both
     if (selectedAnswers.length < 2) {
       alert("Please answer both questions.");
       return;
@@ -156,27 +186,34 @@ console.log("Setting showQuestions TRUE");
       if (res.data.allCorrect) {
         alert("Correct! Moving to next video.");
   
-        // ✅ Clear UI
+        setCompletedVideos((prev) =>
+          prev.includes(currentVideoIndex) ? prev : [...prev, currentVideoIndex]
+        );
+  
         setShowQuestions(false);
         setSelectedAnswers([]);
+        setQuestions([]);
   
-        // ✅ Move to next video
         if (currentVideoIndex < videos.length - 1) {
           setCurrentVideoIndex(currentVideoIndex + 1);
         } else {
           alert("Course Completed 🎉");
         }
-  
       } else {
-        alert("Wrong answers! Going back to previous video.");
+        alert("Wrong answers! Please watch the same video again.");
   
-        // ❌ Clear UI
         setShowQuestions(false);
         setSelectedAnswers([]);
+        setQuestions([]);
+        setVideoEnded(false);
   
-        
+        if (player) {
+          lastPlayedTimeRef.current = 0;
+          setLastPlayedTime(0);
+          player.seekTo(0);
+          player.playVideo();
+        }
       }
-  
     } catch (error) {
       console.error("Error validating answers:", error);
     }
@@ -215,9 +252,47 @@ console.log("Setting showQuestions TRUE");
     height: "600",
     playerVars: {
       autoplay: 1,
+      controls: 1,
+      disablekb: 0,
+      modestbranding: 1,
+      rel: 0,
     },
   }}
+  onReady={(event) => {
+    setPlayer(event.target);
+    const duration = Math.floor(event.target.getDuration());
+    setActualDuration(duration);
+  }}
   onEnd={handleVideoEnd}
+  onStateChange={(event) => {
+    if (event.data === 1) {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+  
+      intervalRef.current = setInterval(() => {
+        if (!event.target || typeof event.target.getCurrentTime !== "function") {
+          clearInterval(intervalRef.current);
+          return;
+        }
+  
+        const currentTime = Math.floor(event.target.getCurrentTime());
+  
+        // allow normal playback progression
+        if (currentTime > lastPlayedTimeRef.current + 2) {
+          event.target.seekTo(lastPlayedTimeRef.current);
+          alert("Skipping is not allowed.");
+        } else {
+          lastPlayedTimeRef.current = currentTime;
+          setLastPlayedTime(currentTime);
+          setWatchedSeconds(currentTime);
+        }
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+  }}
 />
                 ) : (
                   // Local/External Video File
@@ -250,27 +325,25 @@ console.log("Setting showQuestions TRUE");
                   <p className="video-module">📚 Module: {currentVideo.module}</p>
                 )}
 
-                <div className="video-controls">
-                  <button 
-                    onClick={handlePreviousVideo} 
-                    disabled={currentVideoIndex === 0}
-                    className="btn-nav"
-                  >
-                    ← Previous Video
-                  </button>
-                  
-                  <span className="video-counter">
-                    Video {currentVideoIndex + 1} of {videos.length}
-                  </span>
-                  
-                  <button 
-                    onClick={handleNextVideo} 
-                    disabled={currentVideoIndex === videos.length - 1}
-                    className="btn-nav"
-                  >
-                    Next Video →
-                  </button>
-                </div>
+<div className="video-controls">
+  <button 
+    onClick={handlePreviousVideo}
+    className="btn-nav"
+  >
+    ← Previous Video
+  </button>
+  
+  <span className="video-counter">
+    Video {currentVideoIndex + 1} of {videos.length}
+  </span>
+  
+  <button 
+    onClick={handleNextVideo}
+    className="btn-nav"
+  >
+    Next Video →
+  </button>
+</div>
               </div>
 
               {showQuestions && (
@@ -306,10 +379,12 @@ console.log("Setting showQuestions TRUE");
           <div className="videos-list">
             {videos.map((video, index) => (
               <div
-                key={video._id}
-                className={`playlist-item ${index === currentVideoIndex ? 'active' : ''}`}
-                onClick={() => selectVideo(index)}
-              >
+              key={video._id}
+              className={`playlist-item 
+                ${index === currentVideoIndex ? "active" : ""} 
+                ${!completedVideos.includes(index) && index !== currentVideoIndex ? "locked" : ""}`}
+              onClick={() => selectVideo(index)}
+            >
                 <div className="playlist-item-number">{index + 1}</div>
                 <div className="playlist-item-info">
                   <p className="playlist-item-title">{video.title}</p>
