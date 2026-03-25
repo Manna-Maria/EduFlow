@@ -108,13 +108,8 @@ const isAdmin = user?.email === "admin@gmail.com";
   return (
     <div className="course-listing-page">
       <div className="header">
-        <h1>Manage Courses</h1>
-        <button
-          className="btn-create"
-          onClick={() => navigate('/admin/courses/create')}
-        >
-          + Create New Course
-        </button>
+        <h1> Courses Available</h1>
+        
       </div>
 
       {message.text && (
