@@ -28,6 +28,12 @@ const progressSchema = new mongoose.Schema({
     enum: ["In Progress", "Completed"],
     default: "In Progress",
   },
+  completedVideoIds: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Video",
+    }
+  ],
 }, { timestamps: true });
 
 module.exports = mongoose.model("Progress", progressSchema);

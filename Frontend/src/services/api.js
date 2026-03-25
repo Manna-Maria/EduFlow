@@ -33,6 +33,9 @@ export const authAPI = {
   // Get current user
   getCurrentUser: () => API.get("/auth/me"),
 
+  // Update user profile
+  updateProfile: (profileData) => API.put("/auth/profile", profileData),
+
   // Logout
   logout: () => API.post("/auth/logout"),
 };

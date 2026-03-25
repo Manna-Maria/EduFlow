@@ -8,23 +8,28 @@ import YouTube from "react-youtube";
 const CoursePlayer = () => {
   const { courseId } = useParams();
 
-const intervalRef = useRef(null);
-const lastPlayedTimeRef = useRef(0);
+  const intervalRef = useRef(null);
+  const lastPlayedTimeRef = useRef(0);
 
   const [course, setCourse] = useState(null);
   const [videos, setVideos] = useState([]);
   const [currentVideoIndex, setCurrentVideoIndex] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-const [questions, setQuestions] = useState([]);
+  const [questions, setQuestions] = useState([]);
   const [showQuestions, setShowQuestions] = useState(false);
   const [selectedAnswers, setSelectedAnswers] = useState([]);
   const [actualDuration, setActualDuration] = useState(0);
   const [completedVideos, setCompletedVideos] = useState([]);
-const [player, setPlayer] = useState(null);
-const [watchedSeconds, setWatchedSeconds] = useState(0);
-const [lastPlayedTime, setLastPlayedTime] = useState(0);
-const [videoEnded, setVideoEnded] = useState(false);
+  const [videoStartedOnce, setVideoStartedOnce] = useState([]);
+  const [player, setPlayer] = useState(null);
+  const [watchedSeconds, setWatchedSeconds] = useState(0);
+  const [lastPlayedTime, setLastPlayedTime] = useState(0);
+  const [videoEnded, setVideoEnded] = useState(false);
+
+  // Get student ID from localStorage
+  const storedUser = JSON.parse(localStorage.getItem("user") || "null");
+  const studentId = storedUser?.id;
 
   // Fetch course and videos on component mount
   useEffect(() => {
@@ -70,6 +75,36 @@ const [videoEnded, setVideoEnded] = useState(false);
     }
   };
 
+  // Update progress in backend when video is started
+  const handleVideoStart = async () => {
+    if (!studentId || !courseId) {
+      console.log("Missing studentId or courseId", { studentId, courseId });
+      return;
+    }
+
+    if (completedVideos.includes(currentVideoIndex)) {
+      return;
+    }
+
+    if (videoStartedOnce.includes(currentVideoIndex)) {
+      return;
+    }
+
+    setVideoStartedOnce((prev) => [...prev, currentVideoIndex]);
+
+    try {
+      console.log("Recording start progress for video index:", currentVideoIndex, "videoId:", currentVideo?._id);
+      const res = await API.post("/progress/update", {
+        studentId,
+        courseId,
+        videoId: currentVideo?._id,
+      });
+      console.log("Progress saved successfully on start:", res.data);
+    } catch (error) {
+      console.error("Error saving progress on start:", error.response?.data || error.message);
+    }
+  };
+
   const currentVideo = videos[currentVideoIndex];
 
   // Extract YouTube video ID from URL
@@ -88,19 +123,20 @@ const [videoEnded, setVideoEnded] = useState(false);
   const handleVideoEnd = async () => {
     console.log("VIDEO ENDED 🔥");
     setVideoEnded(true);
-  
+
+    // Mark this video as completed locally (backend count already incremented on start)
+    if (!completedVideos.includes(currentVideoIndex)) {
+      setCompletedVideos((prev) => [...prev, currentVideoIndex]);
+    }
+
     try {
       const res = await API.get(`/question/${currentVideo._id}`);
       const fetchedQuestions = res.data.data || [];
-  
+
       console.log("Fetched questions:", fetchedQuestions);
-  
+
       if (fetchedQuestions.length === 0) {
-        // No quiz → mark video complete directly
-        setCompletedVideos((prev) =>
-          prev.includes(currentVideoIndex) ? prev : [...prev, currentVideoIndex]
-        );
-  
+        // No quiz → move to next video
         if (currentVideoIndex < videos.length - 1) {
           alert("Video completed. Moving to next video.");
           setCurrentVideoIndex(currentVideoIndex + 1);
@@ -109,7 +145,7 @@ const [videoEnded, setVideoEnded] = useState(false);
         }
         return;
       }
-  
+
       setQuestions(fetchedQuestions.slice(0, 2));
       setShowQuestions(true);
     } catch (error) {
@@ -185,15 +221,11 @@ const [videoEnded, setVideoEnded] = useState(false);
   
       if (res.data.allCorrect) {
         alert("Correct! Moving to next video.");
-  
-        setCompletedVideos((prev) =>
-          prev.includes(currentVideoIndex) ? prev : [...prev, currentVideoIndex]
-        );
-  
+
         setShowQuestions(false);
         setSelectedAnswers([]);
         setQuestions([]);
-  
+
         if (currentVideoIndex < videos.length - 1) {
           setCurrentVideoIndex(currentVideoIndex + 1);
         } else {
@@ -264,19 +296,21 @@ const [videoEnded, setVideoEnded] = useState(false);
     setActualDuration(duration);
   }}
   onEnd={handleVideoEnd}
-  onStateChange={(event) => {
+  onStateChange={async (event) => {
     if (event.data === 1) {
+      await handleVideoStart();
+
       if (intervalRef.current) clearInterval(intervalRef.current);
-  
+
       intervalRef.current = setInterval(() => {
         if (!event.target || typeof event.target.getCurrentTime !== "function") {
           clearInterval(intervalRef.current);
           return;
         }
-  
+
         const currentTime = Math.floor(event.target.getCurrentTime());
-  
-        // allow normal playback progression
+
+        // prevent skipping ahead
         if (currentTime > lastPlayedTimeRef.current + 2) {
           event.target.seekTo(lastPlayedTimeRef.current);
           alert("Skipping is not allowed.");
@@ -301,6 +335,7 @@ const [videoEnded, setVideoEnded] = useState(false);
                     width="100%"
                     controls
                     autoPlay
+                    onPlay={handleVideoStart}
                     onEnded={handleVideoEnd}
                     onLoadedMetadata={handleVideoMetadataLoaded}
                   >
