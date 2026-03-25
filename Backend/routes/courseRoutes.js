@@ -7,7 +7,9 @@ const {
   updateCourse,
   deleteCourse,
   addModule,
-  getCourseStats
+  getCourseStats,
+  enrollCourse,        // ✅ ADD
+  completeCourse
 } = require("../controllers/courseController");
 
 // ===== COURSE ROUTES =====
@@ -20,7 +22,11 @@ router.get("/:id/stats", getCourseStats);
 
 // Add a module to a course (more specific)
 router.post("/:id/modules", addModule);
+// ===== ENROLL & COMPLETE =====
+router.post("/:id/enroll", enrollCourse);
+const { protect } = require("../middleware/authMiddleware");
 
+router.post("/:id/complete", protect, completeCourse);
 // Get a specific course by ID
 router.get("/:id", getCourseById);
 

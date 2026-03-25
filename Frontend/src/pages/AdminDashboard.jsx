@@ -33,8 +33,13 @@ export default function AdminDashboard() {
       const allVideos = videosResponse.data.data;
 
       // Calculate stats
-      const totalStudents = allCourses.reduce((sum, course) => sum + (course.enrolledStudents?.length || 0), 0);
-      const publishedCourses = allCourses.filter((course) => course.isPublished).length;
+const totalStudents = allCourses.reduce(
+  (sum, course) => sum + (course.totalStudents || 0),
+  0
+);
+      const publishedCourses = allCourses.reduce((sum, course) => {
+  return sum + (course.completedStudents?.length || 0);
+}, 0);
 
       setStats({
         totalCourses: allCourses.length,
@@ -101,7 +106,7 @@ export default function AdminDashboard() {
           color="green"
         />
         <StatCard
-          title="Published Courses"
+          title="Completed Students"
           value={stats.publishedCourses}
           icon="✅"
           color="orange"
@@ -167,8 +172,7 @@ export default function AdminDashboard() {
                   <p>{course.instructor}</p>
                   <div className="item-stats">
                     <span>{course.videos?.length || 0} videos</span>
-                    <span>{course.enrolledStudents?.length || 0} students</span>
-                  </div>
+<span>{course.totalStudents || 0} students</span>                  </div>
                 </div>
                 <span className={`item-status ${course.isPublished ? 'published' : 'draft'}`}>
                   {course.isPublished ? '✓ Published' : '⊘ Draft'}

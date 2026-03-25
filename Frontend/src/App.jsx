@@ -16,7 +16,7 @@ function App() {
       <Routes>
 
         {/* Authentication Route */}
-        <Route path="/login" element={<LoginPage />} />
+        <Route path="/" element={<LoginPage />} />
 
         {/* Protected User Routes */}
         <Route
@@ -49,9 +49,9 @@ function App() {
         <Route
           path="/course/:courseId"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <CoursePlayer />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 

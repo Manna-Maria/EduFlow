@@ -54,6 +54,8 @@ exports.getAllCourses = async (req, res) => {
     const courses = await Course.find(filter)
       .populate("videos")
       .populate("enrolledStudents", "name email")
+      .populate("completedStudents", "name email")
+
       .sort({ createdAt: -1 });
 
     res.status(200).json({
@@ -79,7 +81,8 @@ exports.getCourseById = async (req, res) => {
         path: "videos",
         select: "title description duration thumbnail order module section"
       })
-      .populate("enrolledStudents", "name email");
+     .populate("enrolledStudents", "name email")
+.populate("completedStudents", "name email")
 
     if (!course) {
       return res.status(404).json({
@@ -263,6 +266,76 @@ exports.getCourseStats = async (req, res) => {
     res.status(200).json({
       success: true,
       data: stats
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+// ===== ENROLL IN COURSE =====
+exports.enrollCourse = async (req, res) => {
+  try {
+    const userId  = req.user?.id;// make sure auth middleware exists
+    const { id } = req.params;
+
+    const course = await Course.findById(id);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found"
+      });
+    }
+
+    // prevent duplicate enroll
+    if (!course.enrolledStudents.includes(userId)) {
+      course.enrolledStudents.push(userId);
+      course.totalStudents = course.enrolledStudents.length;
+
+      await course.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Enrolled successfully"
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};
+// ===== MARK COURSE COMPLETED =====
+exports.completeCourse = async (req, res) => {
+  try {
+    const userId = req.user?.id;
+    const { id } = req.params;
+
+    const course = await Course.findById(id);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found"
+      });
+    }
+
+    // prevent duplicate completion
+    if (!course.completedStudents.some(uid => uid.toString() === userId)) {
+      course.completedStudents.push(userId);
+
+      // ✅ ADD THIS LINE (IMPORTANT)
+      course.completedCount = course.completedStudents.length;
+
+      await course.save();
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Course completed"
     });
   } catch (error) {
     res.status(500).json({

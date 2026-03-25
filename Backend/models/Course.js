@@ -71,6 +71,12 @@ const courseSchema = new mongoose.Schema(
         ref: "User"
       }
     ],
+    completedStudents: [
+  {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "User"
+  }
+],
     totalStudents: {
       type: Number,
       default: 0
