@@ -169,6 +169,67 @@ exports.getCurrentUser = async (req, res) => {
   }
 };
 
+// ===== UPDATE USER PROFILE =====
+exports.updateProfile = async (req, res) => {
+  try {
+    const userId = req.user.id; // From auth middleware
+    const { fullName, email, bio } = req.body;
+
+    // Check if email is already taken by another user
+    if (email) {
+      const existingUser = await User.findOne({ email, _id: { $ne: userId } });
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          message: "Email already taken by another user",
+        });
+      }
+    }
+
+    // Prepare update object
+    const updateData = {};
+    if (fullName) updateData.fullName = fullName;
+    if (email) updateData.email = email;
+    if (bio !== undefined) updateData.bio = bio;
+
+    // Handle profile picture upload
+    if (req.file) {
+      updateData.profilePicture = req.file.path; // Assuming multer saves the file path
+    }
+
+    // Update user
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Profile updated successfully",
+      user: {
+        id: updatedUser._id,
+        fullName: updatedUser.fullName,
+        email: updatedUser.email,
+        profilePicture: updatedUser.profilePicture,
+        bio: updatedUser.bio,
+      },
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
 // ===== LOGOUT =====
 exports.logout = (req, res) => {
   res.status(200).json({

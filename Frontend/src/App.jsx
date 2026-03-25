@@ -6,6 +6,7 @@ import CourseListingPage from './pages/CourseListingPage';
 import VideoUploadPage from './pages/VideoUploadPage';
 import CoursePlayer from './pages/CoursePlayer';
 import Dashboard from './pages/Dashboard';
+import Profile from './pages/Profile';
 import ProtectedRoute from "./components/ProtectedRoute";
 import './App.css';
 
@@ -21,17 +22,26 @@ function App() {
         <Route
           path="/"
           element={
-            <ProtectedRoute>
+            //<ProtectedRoute>
               <Dashboard />
-            </ProtectedRoute>
+            //</ProtectedRoute>
           }
         />
 
         <Route
           path="/dashboard"
           element={
-            <ProtectedRoute>
+           //<ProtectedRoute>
               <Dashboard />
+            //</ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/profile"
+          element={
+            <ProtectedRoute>
+              <Profile />
             </ProtectedRoute>
           }
         />
@@ -124,3 +134,4 @@ function App() {
 }
 
 export default App;
+
