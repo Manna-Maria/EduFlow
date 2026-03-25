@@ -205,7 +205,7 @@ function Dashboard() {
               className="menu-item"
               onClick={() => {
                 setIsMenuOpen(false);
-                navigate("/admin/courses");
+                navigate("/user/courses");
               }}
             >
               📚 Courses

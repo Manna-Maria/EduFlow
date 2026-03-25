@@ -138,11 +138,22 @@ const CoursePlayer = () => {
       if (fetchedQuestions.length === 0) {
         // No quiz → move to next video
         if (currentVideoIndex < videos.length - 1) {
-          alert("Video completed. Moving to next video.");
-          setCurrentVideoIndex(currentVideoIndex + 1);
-        } else {
-          alert("Course Completed 🎉");
-        }
+  setCurrentVideoIndex(currentVideoIndex + 1);
+} else {
+  try {
+    await courseAPI.completeCourse(course._id); // ✅ ADD THIS
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+
+await API.post("/progress/mark-complete", {
+  userId: storedUser.id,
+  courseId: course._id,
+});
+    console.log("Course marked complete ✅");
+    alert("Course Completed 🎉");
+  } catch (err) {
+    console.error("Completion API failed ❌", err);
+  }
+}
         return;
       }
 
@@ -227,10 +238,24 @@ const CoursePlayer = () => {
         setQuestions([]);
 
         if (currentVideoIndex < videos.length - 1) {
-          setCurrentVideoIndex(currentVideoIndex + 1);
-        } else {
-          alert("Course Completed 🎉");
-        }
+  setCurrentVideoIndex(currentVideoIndex + 1);
+} else {
+  try {
+    console.log("Calling complete API...");
+
+    await courseAPI.completeCourse(course._id); // ✅ THIS FIXES IT
+const storedUser = JSON.parse(localStorage.getItem("user"));
+
+await API.post("/progress/mark-complete", {
+  userId: storedUser.id,
+  courseId: course._id,
+});
+    console.log("Course marked complete ✅");
+    alert("Course Completed 🎉");
+  } catch (err) {
+    console.error("Completion API failed ❌", err);
+  }
+}
       } else {
         alert("Wrong answers! Please watch the same video again.");
   

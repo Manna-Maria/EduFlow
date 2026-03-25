@@ -62,7 +62,10 @@ export const courseAPI = {
   addModule: (courseId, moduleData) => API.post(`/courses/${courseId}/modules`, moduleData),
 
   // Get course statistics
-  getCourseStats: (courseId) => API.get(`/courses/${courseId}/stats`)
+  getCourseStats: (courseId) => API.get(`/courses/${courseId}/stats`),
+   enrollCourse: (courseId) => API.post(`/courses/${courseId}/enroll`),
+
+  completeCourse: (courseId) => API.post(`/courses/${courseId}/complete`)
 };
 
 // ===== VIDEO ENDPOINTS =====

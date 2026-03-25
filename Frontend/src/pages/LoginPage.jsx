@@ -74,7 +74,13 @@ function LoginPage() {
         axios.defaults.headers.common["Authorization"] =
           `Bearer ${response.data.token}`;
 
-        navigate("/dashboard");
+        const user = response.data.user;
+
+if (user.email === "admin@gmail.com") {
+  navigate("/admin/dashboard");
+} else {
+  navigate("/dashboard");
+}
       }
     } catch (err) {
       setError(
@@ -119,7 +125,13 @@ function LoginPage() {
         axios.defaults.headers.common["Authorization"] =
           `Bearer ${response.data.token}`;
 
-        navigate("/dashboard");
+        const user = response.data.user;
+
+if (user.email === "admin@gmail.com") {
+  navigate("/admin/dashboard");
+} else {
+  navigate("/dashboard");
+}
       }
     } catch (err) {
       setError(

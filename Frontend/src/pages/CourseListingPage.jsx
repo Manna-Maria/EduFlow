@@ -12,7 +12,8 @@ export default function CourseListingPage() {
   const [selectedLevel, setSelectedLevel] = useState('');
   const [message, setMessage] = useState({ type: '', text: '' });
   const navigate = useNavigate();
-
+  const user = JSON.parse(localStorage.getItem("user"));
+const isAdmin = user?.email === "admin@gmail.com";
   const categories = ['Programming', 'Design', 'Business', 'Science', 'Math', 'Languages', 'Other'];
   const levels = ['Beginner', 'Intermediate', 'Advanced'];
 
@@ -84,9 +85,17 @@ export default function CourseListingPage() {
     navigate(`/admin/courses/${courseId}/edit`);
   };
 
-  const handleViewCourse = (courseId) => {
-    navigate(`/admin/courses/${courseId}`);
-  };
+ const handleViewCourse = async (courseId) => {
+  try {
+    if (!isAdmin) {
+      await courseAPI.enrollCourse(courseId); // ✅ enroll user
+    }
+
+    navigate(`/course/${courseId}`); // user route
+  } catch (error) {
+    console.error("Enrollment failed", error);
+  }
+};
 
   if (loading) {
     return (
@@ -99,13 +108,8 @@ export default function CourseListingPage() {
   return (
     <div className="course-listing-page">
       <div className="header">
-        <h1>Manage Courses</h1>
-        <button
-          className="btn-create"
-          onClick={() => navigate('/admin/courses/create')}
-        >
-          + Create New Course
-        </button>
+        <h1> Courses Available</h1>
+        
       </div>
 
       {message.text && (
@@ -207,26 +211,31 @@ export default function CourseListingPage() {
                   </div>
                 </div>
 
-                <div className="course-actions">
-                  <button
-                    className="btn-view"
-                    onClick={() => handleViewCourse(course._id)}
-                  >
-                    View Details
-                  </button>
-                  <button
-                    className="btn-edit"
-                    onClick={() => handleEditCourse(course._id)}
-                  >
-                    Edit
-                  </button>
-                  <button
-                    className="btn-delete"
-                    onClick={() => handleDeleteCourse(course._id)}
-                  >
-                    Delete
-                  </button>
-                </div>
+               <div className="course-actions">
+  <button
+    className="btn-view"
+    onClick={() => handleViewCourse(course._id)}
+  >
+    View Details
+  </button>
+
+  {isAdmin && (
+    <>
+      <button
+        className="btn-edit"
+        onClick={() => handleEditCourse(course._id)}
+      >
+        Edit
+      </button>
+      <button
+        className="btn-delete"
+        onClick={() => handleDeleteCourse(course._id)}
+      >
+        Delete
+      </button>
+    </>
+  )}
+</div>
               </div>
             </div>
           ))}
