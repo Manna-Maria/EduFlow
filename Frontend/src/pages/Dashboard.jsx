@@ -63,22 +63,32 @@ function Dashboard() {
       );
 
       console.log("Courses with progress:", courseWithProgress);
-      setCourses(courseWithProgress);
 
-      // Calculate summary statistics from courses
-      const totalCourses = courseWithProgress.length;
-      const completedCourses = courseWithProgress.filter(
+      // Filter to only show courses the student has started or is enrolled in
+      const enrolledOrStartedCourses = courseWithProgress.filter((course) => {
+        const hasStarted = course.progress.percentage > 0;
+        const isEnrolled = course.enrolledStudents?.some(
+          (student) => student === studentId || student._id === studentId
+        );
+        return hasStarted || isEnrolled;
+      });
+
+      setCourses(enrolledOrStartedCourses);
+
+      // Calculate summary statistics from filtered courses
+      const totalCourses = enrolledOrStartedCourses.length;
+      const completedCourses = enrolledOrStartedCourses.filter(
         (c) => c.progress.percentage === 100
       ).length;
-      const inProgressCourses = courseWithProgress.filter(
+      const inProgressCourses = enrolledOrStartedCourses.filter(
         (c) => c.progress.percentage > 0 && c.progress.percentage < 100
       ).length;
 
-      // Calculate overall progress across all courses
+      // Calculate overall progress across enrolled/started courses
       const overallPercentage =
         totalCourses > 0
           ? Math.round(
-              courseWithProgress.reduce((sum, c) => sum + c.progress.percentage, 0) /
+              enrolledOrStartedCourses.reduce((sum, c) => sum + c.progress.percentage, 0) /
                 totalCourses
             )
           : 0;
