@@ -80,10 +80,17 @@ const totalStudents = allCourses.reduce(
 
   return (
     <div className="admin-dashboard">
-      <div className="header">
-        <h1>Admin Dashboard</h1>
-        <p className="subtitle">Manage courses, videos, and track student engagement</p>
-      </div>
+     <div className="header">
+  <h1>Admin Dashboard</h1>
+  <p className="subtitle">Manage courses, videos, and track student engagement</p>
+  <button
+    className="logout-btn"
+    onClick={() => navigate('/')}
+    style={{ marginLeft: 'auto', padding: '6px 12px', cursor: 'pointer' }}
+  >
+    Logout
+  </button>
+</div>
 
       {/* Statistics Section */}
       <div className="stats-section">
