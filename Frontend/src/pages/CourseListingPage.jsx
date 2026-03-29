@@ -88,7 +88,9 @@ const isAdmin = user?.email === "admin@gmail.com";
  const handleViewCourse = async (courseId) => {
   try {
     if (!isAdmin) {
-      await courseAPI.enrollCourse(courseId); // ✅ enroll user
+      console.log("Attempting to enroll student in course:", courseId);
+      const response=await courseAPI.enrollCourse(courseId); // ✅ enroll user
+      console.log("Enrollment response:", response.data || response);
     }
 
     navigate(`/course/${courseId}`); // user route
